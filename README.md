@@ -40,9 +40,17 @@ Now the rest of the dependencies:
     pip install tensorboard six
 
 ### Training
-To start the training:
+To start the training using the [Duelling DQN](https://arxiv.org/abs/1511.06581):
 
     python dqn_pong.py -n duelling-dqn 
+
+You can also try [Double DQN](https://arxiv.org/abs/1509.06461):
+
+    python dqn_pong.py -n double-dqn
+
+Or just plain [DQN](https://arxiv.org/abs/1312.5602):
+
+    python dqn_pong.py -n dqn
 
 You should see the training log similar to this:
 
@@ -68,8 +76,9 @@ There is no training for first 10k frames so the FPS is quite high (~1.3k frames
 
 The training will stop once (or if) the target R100 of 19.5 is reached. 
 
-__It may take several hours to complete!__
+__It may take several hours to complete!__ Duelling DQN usually trains in about 600k frames, but it may take significantly longer!
 
+### Tensorboard
 While training, you can monitor the progress in [Tensorboard](https://www.tensorflow.org/tensorboard/get_started).
 
 In a separate terminal, start the tensorboard (you will need to be in the project directory):
