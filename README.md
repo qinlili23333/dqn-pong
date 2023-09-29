@@ -4,7 +4,7 @@ A simple implementation of the DQN for solving Pong.
 
 ![Pong](resources/pong.gif)
 
-The code is based on chapter 6 from [Deep Reinforcement Learning Hands-On: Apply modern RL methods to practical problems of chatbots, robotics, discrete optimization, web automation, and more, 2nd Edition](https://www.amazon.com/Deep-Reinforcement-Learning-Hands-optimization/dp/1838826998/) but adds a DuellingDQN implementation and moves hyper-parameters to a config file.
+The code is based on chapter 6 from [Deep Reinforcement Learning Hands-On: Apply modern RL methods to practical problems of chatbots, robotics, discrete optimization, web automation, and more, 2nd Edition](https://www.amazon.com/Deep-Reinforcement-Learning-Hands-optimization/dp/1838826998/) but adds a DuellingDQN implementation, soft target updates and moves hyper-parameters to a config file.
 
 ### GPU
 It's strongly recommended to run the training on a GPU as it will result in roughly double (~120FPS on NVIDIA RTX2080) speed compared to a CPU only training.
