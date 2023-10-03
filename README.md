@@ -37,7 +37,7 @@ Now the rest of the dependencies:
     pip install gym[atari]==0.25
     pip install gym[accept-rom-license]==0.25
     pip install opencv-python
-    pip install tensorboard six
+    pip install tensorboard six pyyaml
 
 ### Training
 To start the training using the [Duelling DQN](https://arxiv.org/abs/1511.06581):
