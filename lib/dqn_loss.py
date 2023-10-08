@@ -1,20 +1,13 @@
 import torch
 import torch.nn as nn
 
-def calc_loss(batch, net, tgt_net, GAMMA, device="cpu"):
-    states, actions, rewards, dones, next_states = batch
+def calc_loss(batch, net, tgt_net, GAMMA):
+    states_v, actions_v, rewards_v, dones_v, next_states_v = batch
 
-    states_v = torch.tensor(states).to(device)
-    next_states_v = torch.tensor(next_states).to(device)
-    actions_v = torch.tensor(actions).to(device)
-    rewards_v = torch.tensor(rewards).to(device)
-    done_mask = torch.BoolTensor(dones).to(device)
+    Q_s = net.forward(states_v.type(torch.float))
+    state_action_values = Q_s.gather(1, actions_v.type(torch.int64).unsqueeze(-1)).squeeze(-1)
+    next_state_values = tgt_net.forward(next_states_v.type(torch.float)).max(1)[0]
 
-    state_action_values = net(states_v).gather(1, actions_v.unsqueeze(-1).type(torch.int64)).squeeze(-1)
-    next_state_values = tgt_net(next_states_v).max(1)[0]
-    next_state_values[done_mask] = 0.0
-    next_state_values = next_state_values.detach()
-
-    expected_state_action_values = next_state_values * GAMMA + rewards_v
+    expected_state_action_values = rewards_v + next_state_values.detach() * GAMMA * (1 - dones_v)
     return nn.MSELoss()(state_action_values, expected_state_action_values)
 

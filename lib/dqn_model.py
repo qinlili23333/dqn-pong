@@ -19,7 +19,7 @@ class DQN(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(conv_out_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, n_actions)
+            nn.Linear(hidden_size / 2, n_actions)
         )
 
     def _get_conv_out(self, shape):

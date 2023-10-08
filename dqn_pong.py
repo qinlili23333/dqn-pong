@@ -32,8 +32,12 @@ class ExperienceBuffer:
     def sample(self, batch_size):
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
         states, actions, rewards, dones, next_states = zip(*[self.buffer[idx] for idx in indices])
-        return np.array(states), np.array(actions), np.array(rewards, dtype=np.float32), \
-               np.array(dones, dtype=np.uint8), np.array(next_states)
+
+        return torch.stack(states).to(device), \
+            torch.stack(actions).to(device), \
+            torch.stack(rewards).to(device), \
+            torch.stack(dones).to(device), \
+            torch.stack(next_states).to(device)
 
 
 class Agent:
@@ -49,10 +53,10 @@ class Agent:
     def play_step(self, net, epsilon=0.0, device="cpu"):
         done_reward = None
 
-        if np.random.random() < epsilon:
+        if frame_idx < params['replay_start_size'] or np.random.random() < epsilon:
             action = env.action_space.sample()
         else:
-            state_a = np.array([self.state], copy=False)
+            state_a = np.array([self.state], copy=False).astype(np.float32)
             state_v = torch.tensor(state_a).to(device)
             q_vals_v = net(state_v)
             _, act_v = torch.max(q_vals_v, dim=1)
@@ -62,7 +66,13 @@ class Agent:
         new_state, reward, is_done, _ = self.env.step(action)
         self.total_reward += reward
 
-        exp = Experience(self.state, action, reward, is_done, new_state)
+        exp = Experience(
+            torch.tensor(self.state, dtype=torch.float16).to(device),
+            torch.tensor(action, dtype=torch.uint8).to(device),
+            torch.tensor(reward, dtype=torch.int16).to(device),
+            torch.tensor(is_done, dtype=torch.uint8).to(device),
+            torch.tensor(new_state, dtype=torch.float16).to(device)
+        )
         self.exp_buffer.append(exp)
         self.state = new_state
         if is_done:
@@ -73,7 +83,7 @@ class Agent:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", default="PongNoFrameskip-v4",
+    parser.add_argument("-e", "--env", default="PongNoFrameskip-v4",
                         help="Name of the environment")
     parser.add_argument("-n", "--network", default='duelling-dqn', help="DQN type - one of dqn, double-dqn and duelling-dqn")
     parser.add_argument("-c", "--config_file", default="config/dqn.yaml", help="Config file with hyper-parameters")
@@ -117,7 +127,7 @@ if __name__ == "__main__":
     frame_idx = 0
     ts_frame = 0
     ts = time.time()
-    best_mean_reward = 19
+    best_mean_reward = params['save_model_min_reward']
 
     while True:
         frame_idx += 1
@@ -130,7 +140,7 @@ if __name__ == "__main__":
             ts_frame = frame_idx
             ts = time.time()
             mean_reward = np.mean(total_rewards[-100:])
-            print("%d: done %d games, R100 %.3f, R: %.3f, eps %.2f, speed %.2f f/s" % (
+            print("%d: done %d games, R100 %.3f, R: %.3f, eps %.3f, speed %.2f f/s" % (
                 frame_idx, len(total_rewards), mean_reward, reward, epsilon,
                 speed
             ))
@@ -138,8 +148,8 @@ if __name__ == "__main__":
             writer.add_scalar("speed", speed, frame_idx)
             writer.add_scalar("reward_100", mean_reward, frame_idx)
             writer.add_scalar("reward", reward, frame_idx)
-            if best_mean_reward is None or best_mean_reward < mean_reward:
-                torch.save(net.state_dict(), f"{params['save_path']}/{args.env}-best.dat")
+            if best_mean_reward < mean_reward:
+                torch.save(net.state_dict(), f"{params['save_path']}/{args.env}_f{frame_idx}_r{mean_reward}.dat")
                 if best_mean_reward is not None:
                     print("Best mean reward updated %.3f -> %.3f, model saved" % (best_mean_reward, mean_reward))
                 best_mean_reward = mean_reward
@@ -157,7 +167,11 @@ if __name__ == "__main__":
 
         optimizer.zero_grad()
         batch = buffer.sample(params["batch_size"])
-        loss_t = loss_calc.calc_loss(batch, net, tgt_net, params["gamma"], device=device)
+        loss_t = loss_calc.calc_loss(batch, net, tgt_net, params["gamma"])
         loss_t.backward()
+
+        if params['clip_gradient']:
+            torch.nn.utils.clip_grad_norm_(net.parameters(), 0.1)
+
         optimizer.step()
     writer.close()

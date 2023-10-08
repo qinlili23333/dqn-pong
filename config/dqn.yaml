@@ -17,6 +17,34 @@ PongNoFrameskip-v4:
   alpha_sync: true
   tau: 0.005
 
+  clip_gradient: false
+
   stopping_reward: 19.5
+
+  save_path: trained_models
+
+Breakout-v4:
+  gamma: 0.99
+  replay_size: 6.0e+4
+
+  batch_size: 32
+
+  hidden_size: 512
+
+  epsilon_decay_last_frame: 5.0e+5
+  epsilon_start: 0.50
+  epsilon_final: 1.0e-2
+
+  replay_start_size: 1.0e+4
+  learning_rate: 1.0e-4
+
+  target_net_sync: 1.0e+3
+  alpha_sync: true
+  tau: 0.005
+
+  clip_gradient: true
+
+  stopping_reward: 200
+  save_model_min_reward: 50
 
   save_path: trained_models
