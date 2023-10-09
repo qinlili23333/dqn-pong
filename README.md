@@ -1,8 +1,17 @@
-# Playing Pong with DQN
+# Playing Atari with DQN
 
-A simple implementation of the DQN for solving Pong. 
+A simple implementation of the DQN for solving Pong and Breakout (in the breakout branch). 
 
-![Pong](resources/pong.gif)
+<table>
+<tr>
+<td>
+<image src="resources/pong.gif"></image>
+</td>
+<td>
+<image src="resources/breakout.gif"></image>
+</td>
+</tr>
+</table>
 
 The code is based on chapter 6 from [Deep Reinforcement Learning Hands-On: Apply modern RL methods to practical problems of chatbots, robotics, discrete optimization, web automation, and more, 2nd Edition](https://www.amazon.com/Deep-Reinforcement-Learning-Hands-optimization/dp/1838826998/) but adds a DuellingDQN implementation, soft target updates and moves hyper-parameters to a config file.
 
@@ -107,3 +116,16 @@ You can now see the trained model in action:
 
 And you should see your agent play.
 
+## Breakout
+
+To work with the Breakout environment, checkout the breakout branch:
+
+    git switch breakout
+
+And start the training:
+
+    python dqn_pong.py -e Breakout-v4 -n 
+
+There are some additional optimizations, most importantly, the replay buffer uses the GPU for storage. As such you need to be careful when tuning the `replay_size` hyper-parameter.
+
+It may take some time (upwards of 1M frames) to train.
