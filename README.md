@@ -124,7 +124,7 @@ To work with the Breakout environment, checkout the breakout branch:
 
 And start the training:
 
-    python dqn_pong.py -e Breakout-v4 -n 
+    python dqn_pong.py -e Breakout-v4 
 
 There are some additional optimizations, most importantly, the replay buffer uses the GPU for storage. As such you need to be careful when tuning the `replay_size` hyper-parameter.
 
